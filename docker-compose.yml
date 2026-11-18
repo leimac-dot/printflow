@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  app:
+    image: php:8.4-apache
+    container_name: printflow_apache
+    restart: unless-stopped
+    working_dir: /var/www/html
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html/public
+    depends_on:
+      - db
+    networks:
+      - printflow-net
+
+  db:
+    image: mysql:8.0
+    container_name: printflow_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: printflow
+      MYSQL_ROOT_PASSWORD: secretpassword
+      MYSQL_USER: printflow_user
+      MYSQL_PASSWORD: secretpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - printflow-net
+
+volumes:
+  mysql_data:
+
+networks:
+  printflow-net:
+    driver: bridge
