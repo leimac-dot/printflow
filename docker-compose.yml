@@ -1,8 +1,8 @@
-version: '3.8'
-
 services:
   app:
-    image: php:8.4-apache
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: printflow_apache
     restart: unless-stopped
     working_dir: /var/www/html
@@ -10,10 +10,9 @@ services:
       - "8000:80"
     volumes:
       - .:/var/www/html
-    environment:
-      - APACHE_DOCUMENT_ROOT=/var/www/html/public
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - printflow-net
 
@@ -30,6 +29,11 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-psecretpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - printflow-net
 
