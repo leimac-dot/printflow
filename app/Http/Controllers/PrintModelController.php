@@ -70,7 +70,7 @@ class PrintModelController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'Ocurrió un error interno al guardar el modelo.',
             ], 500);
         }
     }
@@ -120,7 +120,7 @@ class PrintModelController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'Ocurrió un error interno al actualizar el modelo.',
             ], 500);
         }
     }
@@ -150,7 +150,7 @@ class PrintModelController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'Ocurrió un error interno al eliminar el modelo.',
             ], 500);
         }
     }

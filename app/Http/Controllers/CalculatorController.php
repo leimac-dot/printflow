@@ -63,7 +63,14 @@ class CalculatorController extends Controller
                 'status' => 'nullable|in:draft,sent,accepted,paid',
             ]);
 
-            $quote = $this->quoteService->createQuote($validated, Auth::user());
+            $user = Auth::user();
+            $isAdmin = $user && $user->role === 'admin';
+
+            if (($validated['status'] ?? 'draft') !== 'draft' && ! $isAdmin) {
+                $validated['status'] = 'draft';
+            }
+
+            $quote = $this->quoteService->createQuote($validated, $user);
 
             return response()->json([
                 'success' => true,
@@ -75,12 +82,17 @@ class CalculatorController extends Controller
                 'success' => false,
                 'message' => collect($e->errors())->flatten()->first() ?? 'Datos de cotización inválidos.',
             ], 422);
+        } catch (\DomainException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
         } catch (\Throwable $e) {
             Log::error('Error al guardar cotización: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'Ocurrió un error interno al guardar la cotización.',
             ], 500);
         }
     }
@@ -99,7 +111,7 @@ class CalculatorController extends Controller
             $isAdmin = $user && $user->role === 'admin';
             $isOwner = $user
                 ? ((int) $quote->user_id === (int) $user->id || ($quote->client_email && strcasecmp($quote->client_email, $user->email) === 0))
-                : is_null($quote->user_id);
+                : false;
 
             if ($newStatus === 'sent' && ! $isAdmin) {
                 return response()->json([
@@ -119,6 +131,13 @@ class CalculatorController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Solo el administrador puede marcar esta cotización como pagada.',
+                ], 403);
+            }
+
+            if ($newStatus === 'draft' && ! $isAdmin && ! $isOwner) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No tienes permiso para modificar esta cotización.',
                 ], 403);
             }
 
@@ -147,12 +166,17 @@ class CalculatorController extends Controller
                 'success' => false,
                 'message' => collect($e->errors())->flatten()->first() ?? 'Estado no válido.',
             ], 422);
+        } catch (\DomainException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
         } catch (\Throwable $e) {
             Log::error('Error al actualizar estado de cotización: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'Ocurrió un error interno al actualizar el estado.',
             ], 500);
         }
     }

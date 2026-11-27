@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CalculatorController;
 use App\Http\Controllers\PrintModelController;
 use App\Models\PrintModel;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     $quotes = CalculatorController::visibleQuotes();
@@ -14,7 +14,7 @@ Route::get('/', function () {
 });
 
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 Route::post('/logout', [AuthController::class, 'logout']);
 
 Route::post('/quotes', [CalculatorController::class, 'store']);

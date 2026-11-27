@@ -399,7 +399,15 @@
 
                     <!-- Proyecto y Tiempo -->
                     <section class="bg-[#161920] border border-zinc-800 rounded-lg p-5 sm:p-6">
-                        <h2 class="text-xs font-bold uppercase tracking-widest text-orange-400 mb-4 pb-2 border-b border-zinc-800/80">Proyecto, divisa y tiempo de impresión</h2>
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 pb-2 border-b border-zinc-800/80">
+                            <h2 class="text-xs font-bold uppercase tracking-widest text-orange-400">Proyecto, divisa y tiempo de impresión</h2>
+                            <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+                                <span class="text-zinc-400">Preajuste rápido:</span>
+                                <button type="button" @click="applyMaterialPreset('pla')" class="bg-[#0f1115] hover:bg-zinc-800 border border-zinc-700 text-cyan-300 px-2 py-0.5 rounded transition">PLA</button>
+                                <button type="button" @click="applyMaterialPreset('petg')" class="bg-[#0f1115] hover:bg-zinc-800 border border-zinc-700 text-orange-300 px-2 py-0.5 rounded transition">PETG</button>
+                                <button type="button" @click="applyMaterialPreset('tpu')" class="bg-[#0f1115] hover:bg-zinc-800 border border-zinc-700 text-amber-300 px-2 py-0.5 rounded transition">TPU</button>
+                            </div>
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                             <div>
                                 <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">Negocio / Taller</label>
@@ -494,17 +502,8 @@
 
                         <section class="bg-[#161920] border border-zinc-800 rounded-lg p-5">
                             <h2 class="text-xs font-bold uppercase tracking-widest text-orange-400 mb-1">Impresora y electricidad</h2>
-                            <p class="text-xs text-zinc-400 mb-4 pb-2 border-b border-zinc-800/80">Consumo energético, tarifa por CP y desgaste por hora.</p>
+                            <p class="text-xs text-zinc-400 mb-4 pb-2 border-b border-zinc-800/80">Consumo energético y desgaste por hora.</p>
                             <div class="space-y-3">
-                                <div class="grid grid-cols-3 gap-2 items-end">
-                                    <div class="col-span-2">
-                                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">Código Postal (opcional)</label>
-                                        <input type="text" maxlength="10" x-model="postalCode" placeholder="Ej. 56100" class="w-full bg-[#0f1115] border border-zinc-700 rounded px-3 py-2 text-sm text-white num focus:border-orange-500 focus:outline-none">
-                                    </div>
-                                    <button type="button" @click="lookupTariffByPostalCode()" class="bg-[#0f1115] hover:bg-zinc-800 border border-cyan-500/30 text-cyan-300 text-xs font-semibold py-2 px-2 rounded transition">
-                                        Buscar Tarifa
-                                    </button>
-                                </div>
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">Potencia (Watts)</label>
@@ -786,6 +785,7 @@
                                 <span class="text-lg font-bold text-orange-400 num" x-text="formatCurrency(monthlyMaterialInvestment)">$0.00</span>
                             </div>
                         </div>
+                        <p x-show="goalAlertText" x-text="goalAlertText" class="text-xs text-amber-300 bg-[#0f1115] border border-amber-500/30 rounded px-3 py-2 mt-3"></p>
                     </section>
 
                     <section class="bg-[#161920] border border-zinc-800 rounded-lg p-5 sm:p-6">
@@ -885,13 +885,20 @@
                                 <h2 class="text-xs font-bold uppercase tracking-widest text-orange-400">Resumen</h2>
                                 <span class="text-[10px] text-zinc-400 num" x-text="'Divisa: ' + currency"></span>
                             </div>
-                            <div class="flex bg-[#0f1115] border border-zinc-800 rounded p-0.5 text-[11px]">
-                                <button type="button" @click="summaryView = 'workshop'" :class="summaryView === 'workshop' ? 'bg-orange-600 text-white' : 'text-zinc-400 hover:text-zinc-200'" class="px-2.5 py-1 rounded font-semibold transition">
-                                    Desglose
-                                </button>
-                                <button type="button" @click="summaryView = 'ticket'" :class="summaryView === 'ticket' ? 'bg-orange-600 text-white' : 'text-zinc-400 hover:text-zinc-200'" class="px-2.5 py-1 rounded font-semibold transition">
-                                    Ticket
-                                </button>
+                            <div class="flex items-center gap-1.5">
+                                <div class="flex items-center bg-[#0f1115] border border-zinc-800 rounded px-1 py-0.5 text-[11px] num">
+                                    <button type="button" @click="stepQuantity(-1)" class="px-1.5 text-zinc-300 hover:text-white font-bold">-</button>
+                                    <span class="px-1.5 text-white font-semibold" x-text="qty + ' pz'"></span>
+                                    <button type="button" @click="stepQuantity(1)" class="px-1.5 text-zinc-300 hover:text-white font-bold">+</button>
+                                </div>
+                                <div class="flex bg-[#0f1115] border border-zinc-800 rounded p-0.5 text-[11px]">
+                                    <button type="button" @click="summaryView = 'workshop'" :class="summaryView === 'workshop' ? 'bg-orange-600 text-white' : 'text-zinc-400 hover:text-zinc-200'" class="px-2.5 py-1 rounded font-semibold transition">
+                                        Desglose
+                                    </button>
+                                    <button type="button" @click="summaryView = 'ticket'" :class="summaryView === 'ticket' ? 'bg-orange-600 text-white' : 'text-zinc-400 hover:text-zinc-200'" class="px-2.5 py-1 rounded font-semibold transition">
+                                        Ticket
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -917,6 +924,14 @@
                                 <div class="flex justify-between">
                                     <span class="text-zinc-400">Material:</span>
                                     <span class="font-semibold text-cyan-300" x-text="effectiveFilamentGrams.toFixed(0) + ' g'"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-zinc-400">Precio base:</span>
+                                    <span class="font-semibold text-white" x-text="formatCurrency(commercialSubtotal * qty)"></span>
+                                </div>
+                                <div class="flex justify-between" x-show="(taxAmount + platformFeeAmount + marketplaceExtraAmount) > 0">
+                                    <span class="text-zinc-400">Impuestos / cargos:</span>
+                                    <span class="font-semibold text-zinc-200" x-text="formatCurrency((taxAmount + platformFeeAmount + marketplaceExtraAmount) * qty)"></span>
                                 </div>
                                 <div class="flex justify-between" x-show="qty > 1">
                                     <span class="text-zinc-400">Unitario:</span>
@@ -1364,7 +1379,6 @@
                 filamentWasteRate: 0,
                 multicolorEnabled: false,
                 multicolorWasteRate: 15,
-                postalCode: '',
                 printerWatts: 120,
                 electricityCostPerKwh: 3.50,
                 wearCostPerHour: 2.00,
@@ -1455,6 +1469,36 @@
                 get pendingSentCount() {
                     return this.quotes.filter(q => (q.status || 'draft') === 'sent').length;
                 },
+                stepQuantity(delta) {
+                    const next = (Number(this.quantity) || 1) + delta;
+                    this.quantity = Math.max(1, next);
+                },
+                applyMaterialPreset(type) {
+                    const presets = {
+                        pla: { price: 450, spool: 1000, waste: 0, watts: 120, failure: 8 },
+                        petg: { price: 520, spool: 1000, waste: 3, watts: 150, failure: 10 },
+                        tpu: { price: 650, spool: 500, waste: 5, watts: 135, failure: 12 }
+                    };
+                    const p = presets[type];
+                    if (!p) return;
+                    this.filamentPricePerKg = p.price;
+                    this.spoolGrams = p.spool;
+                    this.filamentWasteRate = p.waste;
+                    this.printerWatts = p.watts;
+                    this.failureMarginRate = p.failure;
+                    this.notify(`Preajuste ${type.toUpperCase()} aplicado.`, 'success');
+                },
+                get goalAlertText() {
+                    const units = this.monthlyUnitsNeeded;
+                    const estimatedMonthlyCap = Math.max(1, Number(this.monthlyEstimatedPieces) || 100);
+                    if ((Number(this.monthlyGoal) || 0) > 0 && this.profitAmount <= 0) {
+                        return 'La ganancia por pieza es $0.00; aumenta el margen o reduce costos para alcanzar tu meta.';
+                    }
+                    if (units > estimatedMonthlyCap) {
+                        return `Meta exigente (${units} piezas vs. ${estimatedMonthlyCap} estimadas/mes): considera subir el margen o aumentar volumen.`;
+                    }
+                    return '';
+                },
                 quoteDetailsText(quote) {
                     const parts = [`${quote.print_time_hours || 0} hrs`];
                     if (quote.filament_grams) {
@@ -1475,16 +1519,6 @@
                     this.bannerTimeout = setTimeout(() => {
                         this.statusBanner.message = '';
                     }, 5000);
-                },
-                lookupTariffByPostalCode() {
-                    const cp = (this.postalCode || '').trim();
-                    if (!cp) {
-                        this.notify('Ingresa un código postal para estimar la tarifa.', 'error');
-                        return;
-                    }
-                    const suggestedTariff = cp.startsWith('0') || cp.startsWith('1') || cp.startsWith('5') ? 3.50 : 2.85;
-                    this.electricityCostPerKwh = suggestedTariff;
-                    this.notify(`Tarifa estimada para CP ${cp}: ${this.formatCurrency(suggestedTariff)}/kWh (ajustable).`, 'success');
                 },
                 toggleExtraWorker() {
                     this.extraWorker.enabled = !this.extraWorker.enabled;
@@ -1787,7 +1821,6 @@
                     this.filamentWasteRate = 0;
                     this.multicolorEnabled = false;
                     this.multicolorWasteRate = 15;
-                    this.postalCode = '';
                     this.printerWatts = 120;
                     this.electricityCostPerKwh = 3.50;
                     this.wearCostPerHour = 2.00;

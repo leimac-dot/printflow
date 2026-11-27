@@ -11,6 +11,18 @@ use Illuminate\Support\Facades\Mail;
 
 class QuoteService
 {
+    /**
+     * Transiciones válidas por estado actual.
+     *
+     * @var array<string, array<int, string>>
+     */
+    private const ALLOWED_TRANSITIONS = [
+        'draft'    => ['draft', 'sent', 'accepted'],
+        'sent'     => ['sent', 'accepted', 'draft'],
+        'accepted' => ['accepted', 'paid', 'draft'],
+        'paid'     => ['paid'],
+    ];
+
     public function createQuote(array $data, ?User $authUser): Quote
     {
         return DB::transaction(function () use ($data, $authUser) {
@@ -47,7 +59,12 @@ class QuoteService
 
     public function changeStatus(Quote $quote, string $newStatus, ?string $clientEmail, ?string $reason, ?User $actor): array
     {
-        $previousStatus = $quote->status;
+        $previousStatus = $quote->status ?: 'draft';
+        $allowedNext = self::ALLOWED_TRANSITIONS[$previousStatus] ?? [];
+
+        if (! in_array($newStatus, $allowedNext, true)) {
+            throw new \DomainException("No se puede cambiar una cotización de '{$previousStatus}' a '{$newStatus}'.");
+        }
 
         $freshQuote = DB::transaction(function () use ($quote, $newStatus, $clientEmail, $reason, $actor, $previousStatus) {
             $targetEmail = $clientEmail ?? $quote->client_email ?? $quote->user?->email;
